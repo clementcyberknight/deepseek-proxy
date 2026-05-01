@@ -1,41 +1,49 @@
-# Builder stage
+# 1. Builder stage
 FROM python:3.11-slim AS builder
 
-# Install uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uv/bin/uv
+# Install uv binary
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-WORKDIR /app
-
-# Enable bytecode compilation
+# Set configuration for uv
 ENV UV_COMPILE_BYTECODE=1
-ENV PATH="/uv/bin:$PATH"
-
-# Copy project files
-COPY pyproject.toml uv.lock ./
-COPY src/ ./src/
-
-# Install dependencies
-RUN uv sync --frozen --no-dev
-
-# Final stage
-FROM python:3.11-slim
+ENV UV_LINK_MODE=copy
 
 WORKDIR /app
 
-# Copy the environment from the builder
+# Install dependencies only (for better layer caching)
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-install-project --no-dev
+
+# Copy source code
+COPY src/ ./src/
+COPY pyproject.toml uv.lock ./
+
+# Install the project itself
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev
+
+# 2. Final runtime stage
+FROM python:3.11-slim AS runtime
+
+WORKDIR /app
+
+# Copy the virtual environment and source code
 COPY --from=builder /app/.venv /app/.venv
 COPY --from=builder /app/src /app/src
 
-# Set environment variables
+# Ensure the virtual environment is in the PATH
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONUNBUFFERED=1
 ENV DEEPSEEK_PROXY_CONFIG_DIR=/data
 
-# Expose the port (default is 9000)
+# Expose the default port
 EXPOSE 9000
 
-# Ensure the data directory exists
+# Create data directory
 RUN mkdir -p /data
 
-# Run the app
+# Run the application
+# We use the entrypoint defined in pyproject.toml
 CMD ["deepseek-cursor-proxy", "--host", "0.0.0.0", "--port", "9000", "--no-ngrok", "--config", "/data/config.yaml"]
