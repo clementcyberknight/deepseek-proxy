@@ -832,7 +832,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
         "--ngrok",
         action=argparse.BooleanOptionalAction,
         default=None,
-        help="Start an ngrok tunnel and print the Cursor base URL",
+        help=argparse.SUPPRESS,
     )
     parser.add_argument(
         "--verbose",

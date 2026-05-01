@@ -9,7 +9,7 @@ This proxy can also help **other applications and coding agents** beyond Cursor 
 
 - ✅ Injects `reasoning_content` into outgoing tool-call requests since Cursor does not include the field, restoring previously cached reasoning from regular and streamed DeepSeek responses. See [DeepSeek docs](https://api-docs.deepseek.com/guides/thinking_mode#tool-calls) for more details.
 - ✅ Displays DeepSeek's thinking tokens in Cursor by forwarding them into Cursor-visible collapsible Markdown `<details><summary>Thinking</summary>...</details>` blocks.
-- ✅ Supports an ngrok tunnel for easy local testing (with a public HTTPS URL).
+- ✅ Supports public HTTPS URLs for seamless integration with Cursor.
 - ✅ Provides other compatibility fixes to make DeepSeek models run well in Cursor.
 
 ## Why This Exists
@@ -33,30 +33,27 @@ Provider returned error:
 
 ## Usage
 
-### Step 1: Set Up a Public URL
+### Step 1: Deploy to a Public URL (Coolify / Docker)
 
-Cursor blocks non-public API URLs such as `localhost`, so the proxy needs a public HTTPS URL. You have two main options:
+Cursor blocks non-public API URLs such as `localhost`, so the proxy needs a public HTTPS URL. For a permanent setup without time limits, we recommend deploying the proxy to a server using **Coolify**.
 
-#### Option A: ngrok (Local/Temporary)
-[ngrok](https://ngrok.com/) can expose your local proxy to the internet. This is great for quick testing, but the free version has a **2-hour session limit**. 
+**Step-by-Step Coolify Deployment:**
 
-1. Create an ngrok account and visit [ngrok's dashboard](https://dashboard.ngrok.com).
-2. Install and authenticate ngrok once:
-   ```bash
-   brew install ngrok
-   ngrok config add-authtoken <your-ngrok-token>
-   ```
+1.  **Fork the Repository**: Fork this repo to your own GitHub/GitLab account.
+2.  **Create New Resource**: In your Coolify dashboard, click **+ New Resource** and select **Public Repository** (or private if you've linked your account).
+3.  **Paste Repository URL**: Paste your fork's URL. Coolify will automatically detect the `Dockerfile`.
+4.  **Configure Build**:
+    *   **Build Pack**: Ensure it's set to **Dockerfile**.
+    *   **Port**: Set the **Destination Port** to `9000`.
+5.  **Set Up Persistence (Highly Recommended)**:
+    *   Go to the **Storage** tab.
+    *   Add a new **Local Volume**.
+    *   Set the **Destination Path** to `/data`. This ensures your `config.yaml` and reasoning cache database stay safe between deployments.
+6.  **Deploy**: Click **Deploy**.
+7.  **Get Your URL**: Once deployed, Coolify will provide a permanent domain (e.g., `https://deepseek-proxy.your-domain.com`).
+8.  **Cursor Configuration**: Use `https://your-coolify-url.com/v1` as the Base URL in Cursor.
 
-#### Option B: Coolify / Docker (Permanent)
-For a permanent setup without time limits, deploy the proxy to a server using **Coolify** or **Docker**.
-
-1. **Connect Repository**: Point Coolify to your fork of this repository.
-2. **Dockerfile**: Coolify will automatically detect the `Dockerfile` in the root.
-3. **Configuration**:
-   - **Port**: Set the destination port to `9000`.
-   - **Volumes**: (Optional) Mount `/data` to a persistent volume to keep your reasoning cache across restarts.
-4. **Environment**: The proxy will run with `--no-ngrok` automatically via the Docker CMD.
-5. **URL**: Coolify will provide a permanent `https://your-proxy.your-domain.com` URL.
+**Why this is better:** This setup provides a permanent URL that won't expire. The Docker container is pre-configured to run with `--no-ngrok` and uses `/data/config.yaml` for persistence.
 
 
 ### Step 2: Install and Start the Proxy Server
@@ -91,7 +88,7 @@ pip install -e .
 deepseek-cursor-proxy
 ```
 
-When ngrok is enabled, `deepseek-cursor-proxy` will print the ngrok public URL on start. If it differs from the one in Cursor, update it in Cursor's Base URL field.
+The proxy will print the local listening URL on start. If you are using a public URL (like Coolify), use that in Cursor's Base URL field.
 
 On the first run, `deepseek-cursor-proxy` will create:
 
@@ -107,8 +104,8 @@ deepseek-cursor-proxy --no-display-reasoning
 # Show full incoming and outgoing requests
 deepseek-cursor-proxy --verbose
 
-# Run without ngrok (run on localhost directly)
-deepseek-cursor-proxy --no-ngrok
+# Run on all interfaces (useful for Docker/remote access)
+deepseek-cursor-proxy --host 0.0.0.0
 
 # Use a different local port
 deepseek-cursor-proxy --port 9000
@@ -120,7 +117,7 @@ In Cursor, add the DeepSeek custom model and point it at this proxy:
 
 - Model: `deepseek-v4-pro`
 - API Key: your DeepSeek API key
-- Base URL: your public HTTPS URL (from ngrok or Coolify) with the `/v1` path
+- Base URL: your public HTTPS URL (from Coolify) with the `/v1` path
 
 The proxy respects the DeepSeek model name Cursor sends, such as `deepseek-v4-pro` or `deepseek-v4-flash`. The `model` field in `config.yaml` is used as a fallback only when a request does not include a model.
 
@@ -173,10 +170,10 @@ Run with verbose output:
 deepseek-cursor-proxy --verbose
 ```
 
-Run without ngrok for local curl testing:
+Run on a specific port for local testing:
 
 ```bash
-deepseek-cursor-proxy --no-ngrok --port 9000 --verbose
+deepseek-cursor-proxy --port 9000 --verbose
 ```
 
 Capture full structured request traces for debugging:
@@ -199,4 +196,4 @@ deepseek-cursor-proxy --clear-reasoning-cache
 
 ## Credits
 
-This project was originally created by [yxlao](https://github.com/yxlao) to provide a seamless ngrok-powered proxy for DeepSeek and Cursor.
+This project was originally created by [yxlao](https://github.com/yxlao) to provide a seamless proxy for DeepSeek and Cursor.
