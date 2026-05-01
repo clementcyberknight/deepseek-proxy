@@ -1,9 +1,14 @@
-FROM ghcr.io/astral-sh/uv:python3.11-slim AS builder
+# Builder stage
+FROM python:3.11-slim AS builder
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uv/bin/uv
 
 WORKDIR /app
 
 # Enable bytecode compilation
 ENV UV_COMPILE_BYTECODE=1
+ENV PATH="/uv/bin:$PATH"
 
 # Copy project files
 COPY pyproject.toml uv.lock ./
@@ -33,7 +38,4 @@ EXPOSE 9000
 RUN mkdir -p /data
 
 # Run the app
-# Use --host 0.0.0.0 to allow external connections in Docker
-# Use --no-ngrok because Coolify provides its own ingress/reverse proxy
-# We use --config to point to a persistent location
 CMD ["deepseek-cursor-proxy", "--host", "0.0.0.0", "--port", "9000", "--no-ngrok", "--config", "/data/config.yaml"]
