@@ -195,4 +195,4 @@ deepseek-cursor-proxy --clear-reasoning-cache
 
 ## Credits
 
-This project was originally created by [yxlao](https://github.com/yxlao).
+[yxlao](https://github.com/yxlao).
