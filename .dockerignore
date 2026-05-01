@@ -1,0 +1,11 @@
+.git
+.github
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.pre-commit-config.yaml
+tests/
+assets/
+README.md
+LICENSE
