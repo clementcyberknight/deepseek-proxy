@@ -43,18 +43,17 @@ Cursor blocks non-public API URLs such as `localhost`, so the proxy needs a publ
 2.  **Create New Resource**: In your Coolify dashboard, click **+ New Resource** and select **Public Repository** (or private if you've linked your account).
 3.  **Paste Repository URL**: Paste your fork's URL. Coolify will automatically detect the `Dockerfile`.
 4.  **Configure Build**:
-    *   **Build Pack**: Ensure it's set to **Dockerfile**.
-    *   **Port**: Set the **Destination Port** to `9000`.
+    - **Build Pack**: Ensure it's set to **Dockerfile**.
+    - **Port**: Set the **Destination Port** to `9000`.
 5.  **Set Up Persistence (Highly Recommended)**:
-    *   Go to the **Storage** tab.
-    *   Add a new **Local Volume**.
-    *   Set the **Destination Path** to `/data`. This ensures your `config.yaml` and reasoning cache database stay safe between deployments.
+    - Go to the **Storage** tab.
+    - Add a new **Local Volume**.
+    - Set the **Destination Path** to `/data`. This ensures your `config.yaml` and reasoning cache database stay safe between deployments.
 6.  **Deploy**: Click **Deploy**.
 7.  **Get Your URL**: Once deployed, Coolify will provide a permanent domain (e.g., `https://deepseek-proxy.your-domain.com`).
 8.  **Cursor Configuration**: Use `https://your-coolify-url.com/v1` as the Base URL in Cursor.
 
 **Why this is better:** This setup provides a permanent URL that won't expire. The Docker container is pre-configured to run with `--no-ngrok` and uses `/data/config.yaml` for persistence.
-
 
 ### Step 2: Install and Start the Proxy Server
 
@@ -196,4 +195,4 @@ deepseek-cursor-proxy --clear-reasoning-cache
 
 ## Credits
 
-This project was originally created by [yxlao](https://github.com/yxlao) to provide a seamless proxy for DeepSeek and Cursor.
+This project was originally created by [yxlao](https://github.com/yxlao).
