@@ -10,14 +10,14 @@ ENV UV_LINK_MODE=copy
 
 WORKDIR /app
 
-# Install dependencies only (for better layer caching)
-RUN --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --frozen --no-install-project --no-dev
+# Copy lockfile and pyproject.toml first for better layer caching
+COPY pyproject.toml uv.lock ./
+
+# Install dependencies only
+RUN uv sync --frozen --no-install-project --no-dev
 
 # Copy source code
 COPY src/ ./src/
-COPY pyproject.toml uv.lock ./
 
 # Install the project itself
 RUN uv sync --frozen --no-dev
