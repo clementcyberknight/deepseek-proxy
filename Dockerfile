@@ -11,8 +11,7 @@ ENV UV_LINK_MODE=copy
 WORKDIR /app
 
 # Install dependencies only (for better layer caching)
-RUN --mount=type=cache,id=uv,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
+RUN --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --frozen --no-install-project --no-dev
 
@@ -21,8 +20,7 @@ COPY src/ ./src/
 COPY pyproject.toml uv.lock ./
 
 # Install the project itself
-RUN --mount=type=cache,id=uv,target=/root/.cache/uv \
-    uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev
 
 # 2. Final runtime stage
 FROM python:3.11-slim AS runtime
