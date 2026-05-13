@@ -33,27 +33,24 @@ Provider returned error:
 
 ## Usage
 
-### Step 1: Deploy to a Public URL (Coolify / Docker)
+### Step 1: Deploy to a Public URL (Railway, Render, Coolify, etc.)
 
-Cursor blocks non-public API URLs such as `localhost`, so the proxy needs a public HTTPS URL. For a permanent setup without time limits, we recommend deploying the proxy to a server using **Coolify**.
+Cursor blocks non-public API URLs such as `localhost`, so the proxy needs a public HTTPS URL. For a permanent setup without time limits, you can deploy the proxy to any hosting platform that supports Docker deployments (e.g., Railway, Render, Coolify, Fly.io).
 
-**Step-by-Step Coolify Deployment:**
+**General Docker Deployment Steps:**
 
 1.  **Fork the Repository**: Fork this repo to your own GitHub/GitLab account.
-2.  **Create New Resource**: In your Coolify dashboard, click **+ New Resource** and select **Public Repository** (or private if you've linked your account).
-3.  **Paste Repository URL**: Paste your fork's URL. Coolify will automatically detect the `Dockerfile`.
-4.  **Configure Build**:
-    - **Build Pack**: Ensure it's set to **Dockerfile**.
-    - **Port**: Set the **Destination Port** to `9000`.
+2.  **Create New Project**: In your chosen hosting platform dashboard, create a new project and select **Deploy from GitHub repository**.
+3.  **Configure Build**: The platform will automatically detect the `Dockerfile`. No custom build commands are needed.
+4.  **Port Configuration**: The Dockerfile automatically respects the `$PORT` environment variable provided by most modern platforms (like Railway and Render). If your platform requires manual port configuration, it defaults to `9000`.
 5.  **Set Up Persistence (Highly Recommended)**:
-    - Go to the **Storage** tab.
-    - Add a new **Local Volume**.
-    - Set the **Destination Path** to `/data`. This ensures your `config.yaml` and reasoning cache database stay safe between deployments.
-6.  **Deploy**: Click **Deploy**.
-7.  **Get Your URL**: Once deployed, Coolify will provide a permanent domain (e.g., `https://deepseek-proxy.your-domain.com`).
-8.  **Cursor Configuration**: Use `https://your-coolify-url.com/v1` as the Base URL in Cursor.
+    - The proxy stores its configuration and reasoning cache in the `/data` directory inside the container.
+    - To prevent losing this data when the container restarts, you must add a **Persistent Volume** in your hosting provider's settings and mount it to the **Destination Path** `/data`.
+6.  **Deploy**: Click Deploy.
+7.  **Get Your URL**: Once deployed, the platform will provide a permanent domain (e.g., `https://deepseek-proxy.your-domain.com`).
+8.  **Cursor Configuration**: Use `https://your-deployment-url.com/v1` as the Base URL in Cursor.
 
-**Why this is better:** This setup provides a permanent URL that won't expire. The Docker container is pre-configured to run with `--no-ngrok` and uses `/data/config.yaml` for persistence.
+**Why this is better:** This setup provides a permanent URL that won't expire. The Docker container is pre-configured to run with `--no-ngrok`, respects dynamic ports, and uses `/data/config.yaml` for persistence.
 
 ### Step 2: Install and Start the Proxy Server
 
