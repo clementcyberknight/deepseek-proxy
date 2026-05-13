@@ -84,7 +84,7 @@ class DeepSeekProxyHandler(BaseHTTPRequestHandler):
         request_path = urlparse(self.path).path
         if self.config.verbose:
             LOG.info("incoming GET %s from %s", request_path, self.client_address[0])
-        if request_path in {"/healthz", "/v1/healthz"}:
+        if request_path in {"/health", "/healthz", "/v1/health", "/v1/healthz"}:
             self._send_json(200, {"ok": True})
             return
         if request_path in {"/models", "/v1/models"}:
