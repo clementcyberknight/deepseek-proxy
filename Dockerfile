@@ -46,4 +46,6 @@ RUN mkdir -p /data
 
 # Run the application
 # We use the entrypoint defined in pyproject.toml
-CMD ["deepseek-cursor-proxy", "--host", "0.0.0.0", "--port", "9000", "--no-ngrok", "--config", "/data/config.yaml"]
+# Use string form to allow environment variable expansion
+CMD deepseek-cursor-proxy --host 0.0.0.0 --port ${PORT:-9000} --no-ngrok --config /data/config.yaml
+
